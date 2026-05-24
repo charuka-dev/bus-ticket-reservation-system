@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /* POPUP BACKDROP (overlay behind popup) */
 .popup-overlay {
@@ -76,4 +77,572 @@
     transform: scale(0.8);
     opacity: 0;
   }
+=======
+/* Global Reset */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  background-color: #3572d3;
+  color: white;
+  padding: 0 20px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  z-index: 50;
+}
+
+/* Main layout setup */
+.main-layout {
+  display: flex;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background-color: #f1f5f9;
+}
+
+/* Sidebar Fix - Button selector eka specific kala */
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  background-color: #ffffff;
+  padding: 20px 15px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e2e8f0;
+  height: 100%;
+}
+
+/* Meka thama sidebar eke thiyena buttons witharak selector eka */
+.sidebar > button, .sidebar .sidebar-nav-btn {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: none;
+  background-color: #254484;
+  color: white;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.sidebar button:hover {
+  background-color: #1d4ed8;
+  transform: translateX(4px);
+}
+
+.logout-btn {
+  margin-top: auto !important;
+  background-color: #dc2626 !important;
+  text-align: center !important;
+}
+
+/* Right content area */
+.content {
+  flex: 1;
+  padding: 30px;
+  background-color: #f8fafc;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* ✅ OYA ILLAPU "ADD CONDUCTOR" BUTTON STYLE EKA */
+.add-btn {
+  background-color: #16a34a !important; /* Green Color */
+  color: white !important;
+  padding: 12px 25px !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  display: inline-block !important;
+  margin-top: 10px !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  transition: transform 0.2s !important;
+}
+
+.add-btn:hover {
+  background-color: #15803d !important;
+  transform: scale(1.02) !important;
+}
+
+/* Table styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+th {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  padding: 15px;
+  text-align: left;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+td {
+  padding: 15px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+/* Cards & Forms */
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.topbar {
+  background: #3572d3;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 25px;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 14px;
+  background-color: white !important; /* Textbox white kala */
+  color: #0f172a !important; /* Text penna black kala */
+}
+
+.delete-btn {
+  color: #ef4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+.styled-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.styled-table th, .styled-table td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+.status-badge { padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+.status-badge.confirmed { background: #dcfce7; color: #166534; }
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  width: 250px;
+}
+
+/* Logout Button (උඩින්ම තියෙන එක) */
+.logout-btn-top {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.sidebar-divider {
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 10px 0 20px 0;
+}
+
+/* අනෙක් බොත්තම් වල පෙනුම */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar nav button {
+  background: transparent;
+  text-align: left;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.sidebar nav button:hover {
+  background: #f3f4f6;
+  color: #2563eb;
+}
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* බොත්තම් ටික උඩ සහ පහළට බෙදන්න */
+  height: 100vh;
+  padding: 24px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  width: 260px;
+}
+
+.sidebar-title {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar nav button {
+  background: transparent;
+  text-align: left;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.sidebar nav button:hover {
+  background: #f1f5f9;
+  color: #2563eb;
+}
+
+/* පහළ කොටස (Profile & Logout) */
+.sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 20px;
+}
+
+.profile-btn {
+  background: #1e293b;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.logout-btn-bottom {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.logout-btn-bottom:hover {
+  background: #fecaca;
+}
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* මේක තමයි බොත්තම් දෙක පහළට යවන්නේ */
+  height: 100vh;
+  padding: 24px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  width: 260px;
+}
+
+.sidebar-title {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar-nav button {
+  background: transparent;
+  text-align: left;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s;
+  color: #374151;
+}
+
+.sidebar-nav button:hover {
+  background: #f1f5f9;
+  color: #2563eb;
+}
+
+/* පහළ කොටස (Profile & Logout) */
+.sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 20px;
+}
+
+.profile-btn {
+  background: #1e293b;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.logout-btn-bottom {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.logout-btn-bottom:hover {
+  background: #fecaca;
+}
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* බොත්තම් දෙක උඩ සහ පහළ වෙන් කරයි */
+  height: 90vh; /* වින්ඩෝ එකේ උසට සකසයි */
+  padding: 20px;
+  background: #ffffff;
+  border-right: 1px solid #ddd;
+  width: 250px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* පහළ බොත්තම් දෙකේ මැනේජ්මන්ට් එක */
+.sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.profile-btn {
+  background: #1e293b;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.logout-btn {
+  background: #ef4444;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}/* Premium Luxury Sidebar Theme */
+.sidebar-container {
+  width: 260px; /* පළල 260px දක්වා අඩු කළා Form එක වැහෙන්නේ නැති වෙන්න */
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: linear-gradient(180deg, #0b0f19 0%, #111827 100%);
+  color: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  padding: 30px 20px; /* Padding ටිකක් අඩු කළා පැතිවලින් */
+  box-sizing: border-box;
+  box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  font-family: 'Inter', 'Poppins', sans-serif;
+  z-index: 100;
+}
+
+/* Brand/Logo Layout */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 35px;
+  padding-left: 8px;
+}
+
+.brand-sparkle {
+  color: #fbbf24;
+  font-size: 20px;
+  animation: floatGlow 3s ease-in-out infinite;
+}
+
+.brand-title {
+  font-size: 17px; /* අකුරු පොඩ්ඩක් කුඩා කළා ලස්සනට පේන්න */
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #ffffff;
+  margin: 0;
+  text-transform: uppercase;
+  background: linear-gradient(120deg, #ffffff 0%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Menu Layout */
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.menu-item {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  text-align: left;
+  padding: 12px 14px;
+  font-size: 13.5px; /* පොඩ්ඩක් compact කළා */
+  font-weight: 500;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap; /* අකුරු පේළි දෙකකට කැඩෙන එක නවත්වනවා */
+}
+
+.menu-indicator {
+  width: 5px;
+  height: 5px;
+  background-color: transparent;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.menu-item:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.03);
+  padding-left: 18px;
+}
+
+.menu-item.active {
+  color: #fbbf24;
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.1) 0%, rgba(251, 191, 36, 0) 100%);
+  font-weight: 600;
+  border-left: 2.5px solid #fbbf24;
+  border-radius: 0 12px 12px 0;
+}
+
+.menu-item.active .menu-indicator {
+  background-color: #fbbf24;
+  box-shadow: 0 0 8px #fbbf24;
+}
+
+/* Bottom Footer Section */
+.sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 20px;
+  margin-top: auto;
+}
+
+.profile-link {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #d1d5db;
+  padding: 11px;
+  text-align: center;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.profile-link:hover, .profile-link.active {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.profile-link.active {
+  border-color: #fbbf24;
+  color: #fbbf24;
+}
+
+.logout-link {
+  background: transparent;
+  border: none;
+  color: #f87171;
+  padding: 11px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.logout-link:hover {
+  background: rgba(248, 113, 113, 0.08);
+  letter-spacing: 0.5px;
+}
+
+@keyframes floatGlow {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.8; }
+  50% { transform: translateY(-2px) scale(1.1); opacity: 1; filter: drop-shadow(0 0 4px #fbbf24); }
+}
+
+/* ⚠️ මැද CONTENT එක සයිඩ්බාර් එක ගාවින් පටන් ගන්න මේ කෑල්ල අනිවාර්යයි */
+.main-content-wrapper {
+  margin-left: 260px; /* සයිඩ්බාර් එකේ අලුත් පළල ප්‍රමාණය */
+  width: calc(100% - 260px);
+  padding: 20px;
+  box-sizing: border-box;
+>>>>>>> feature/owner
 }

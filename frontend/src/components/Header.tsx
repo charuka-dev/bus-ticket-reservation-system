@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import  { useState, useEffect } from "react";
 import "../styles/header.css";
 import { getAdminProfileImage } from "../services/adminProfileService";
@@ -40,8 +41,20 @@ const Header = () => {
         {/* Active status indicator dot */}
         <span className="active-status-dot"></span>
       </div>
+=======
+import "../styles/dashboard.css";
+
+const Header = () => {
+  return (
+    <div style={{ padding: "15px", background: "#3c73cc", color: "white" }}>
+      <h2>Owner Dashboard</h2>
+>>>>>>> feature/owner
     </div>
   );
 };
 
+<<<<<<< HEAD
 export default Header;
+=======
+export default Header;
+>>>>>>> feature/owner
