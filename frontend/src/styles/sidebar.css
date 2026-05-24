@@ -1,0 +1,42 @@
+/* Sidebar layout with clean buttons and red logout action */
+.sidebar {
+  width: 240px;
+  background: #e8e9ec;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar button {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 20px;
+
+  background: rgb(255, 255, 255);
+  color: black;
+  border: 1px solid #d1d5db;
+
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+
+  transition: 0.2s ease;
+}
+
+/* hover effect */
+.sidebar button:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* logout button stays red */
+.logout-btn {
+  margin-top: auto;
+  background: #dc2626 !important;
+  color: white !important;
+  border: none !important;
+}
+
+.logout-btn:hover {
+  background: #b91c1c !important;
+}

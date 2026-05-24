@@ -1,0 +1,26 @@
+/* Full page height setup */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* Default font style for whole app */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Main layout container (sidebar + content) */
+.main-layout {
+  display: flex;
+  height: calc(100vh - 60px); /* full screen minus header height */
+}
+
+/* Right side content area */
+.content {
+  flex: 1;              /* take remaining space */
+  padding: 20px;        /* inner spacing */
+  background: #ffffff;  /* white background */
+  overflow-y: auto;     /* enable vertical scroll */
+}
