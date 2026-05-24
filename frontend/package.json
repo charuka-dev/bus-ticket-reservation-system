@@ -10,8 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
     "browser-image-compression": "^2.0.2",
     "firebase": "^12.12.1",
+=======
+    "firebase": "^12.13.0",
+    "html5-qrcode": "^2.3.8",
+    "lucide-react": "^1.16.0",
+>>>>>>> feature/conductor
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-icons": "^5.6.0",

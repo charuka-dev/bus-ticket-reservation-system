@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import "./styles/App.css";
 
@@ -85,3 +86,9 @@ function App() {
 }
 
 export default App;
+=======
+﻿import ConductorApp from './conductor/App';
+
+export default ConductorApp;
+
+>>>>>>> feature/conductor
