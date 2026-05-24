@@ -1,0 +1,242 @@
+
+/* Main login page container (split left + right panels) */
+.login-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* =========================
+   LEFT PANEL (branding/info section)
+========================= */
+.login-left {
+  flex: 1;
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+  color: white;
+  padding: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Main title text */
+.login-left h1 {
+  font-size: 38px;
+  margin-bottom: 10px;
+}
+
+/* Subtitle under title */
+.subtitle {
+  font-size: 16px;
+  opacity: 0.8;
+  margin-bottom: 30px;
+}
+
+/* Feature list container */
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Each feature item */
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+/* Feature hover effect */
+.feature-item:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateX(5px);
+}
+
+/* Feature icon */
+.feature-item .icon {
+  font-size: 18px;
+  color: #60a5fa;
+}
+
+/* =========================
+   RIGHT PANEL (login form area)
+========================= */
+.login-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  background: linear-gradient(135deg, #e2e8f0, #f8fafc);
+  overflow: hidden;
+}
+
+/* decorative background glow */
+.login-right::before {
+  content: "";
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  background: #3b82f6;
+  opacity: 0.2;
+  filter: blur(120px);
+  border-radius: 50%;
+  top: -120px;
+  right: -120px;
+}
+
+/* =========================
+   LOGIN CARD (form box)
+========================= */
+.login-card {
+  position: relative;
+  z-index: 2;
+  width: 360px;
+  padding: 35px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(18px);
+  border-radius: 16px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.18);
+  animation: popupIn 0.5s ease;
+  transform-origin: center;
+}
+
+/* Login card animation */
+@keyframes popupIn {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Login title */
+.login-card h2 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Form labels */
+.login-card label {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Input fields */
+.login-card input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  transition: 0.3s;
+  background: white;
+  box-sizing: border-box;
+}
+
+/* Input focus effect */
+.login-card input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 10px rgba(59,130,246,0.25);
+}
+
+/* Password field wrapper */
+.password-wrapper {
+  position: relative;
+}
+
+/* Eye icon inside password field */
+.password-wrapper .eye-icon {
+  position: absolute;
+  right: 14px;
+  top: 58%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #64748b;
+  font-size: 18px;
+  z-index: 10;
+  transition: 0.2s;
+}
+
+/* Eye icon hover effect */
+.password-wrapper .eye-icon:hover {
+  color: #2563eb;
+}
+
+/* Login button */
+.login-card button {
+  width: 92%;
+  margin: 22px auto 0;
+  display: block;
+  padding: 12px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+/* Button hover effect */
+.login-card button:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+/* =========================
+   POPUP (login success/error modal)
+========================= */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Popup box */
+.popup-box {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+  width: 320px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+}
+
+/* Popup button */
+.popup-box button {
+  margin-top: 12px;
+  padding: 8px 15px;
+  border: none;
+  background: #ef4444;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Popup button hover */
+.popup-box button:hover {
+  background: #dc2626;
+}
+
+/* Success popup button style */
+.popup-box.success button {
+  background: #16a34a;
+}

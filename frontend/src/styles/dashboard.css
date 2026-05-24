@@ -1,0 +1,79 @@
+
+/* POPUP BACKDROP (overlay behind popup) */
+.popup-overlay {
+  position: fixed;
+  inset: 0; /* cover full screen */
+  background: rgba(0,0,0,0.45);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  backdrop-filter: blur(6px); /* blur background */
+  z-index: 9999; /* always on top */
+}
+
+/* POPUP MAIN BOX (card style modal) */
+.popup-box {
+  min-width: 320px;
+  max-width: 420px;
+
+  padding: 20px 25px;
+  border-radius: 14px;
+
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+
+  color: #111827;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(15px);
+
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+
+  animation: popupIn 0.35s ease;
+  transform-origin: center;
+}
+
+/* POPUP OPEN ANIMATION */
+@keyframes popupIn {
+  from {
+    transform: scale(0.8) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* SUCCESS POPUP STYLE */
+.popup-box.success {
+  border-left: 6px solid #22c55e;
+  box-shadow: 0 20px 60px rgba(34,197,94,0.25);
+}
+
+/* ERROR POPUP STYLE */
+.popup-box.error {
+  border-left: 6px solid #ef4444;
+  box-shadow: 0 20px 60px rgba(239,68,68,0.25);
+}
+
+/* POPUP TEXT */
+.popup-box p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* CLOSE / HIDE ANIMATION CLASS */
+.popup-hide {
+  animation: popupOut 0.25s ease forwards;
+}
+
+/* POPUP CLOSE ANIMATION */
+@keyframes popupOut {
+  to {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
