@@ -1,0 +1,12 @@
+
+/* Search panel container (top area for search bar) */
+.search-panel {
+  padding: 10px 20px;
+  background: #f1f5f9; /* light gray background */
+}
+
+/* Search input field */
+.search-bar {
+  width: 100%;   /* full width */
+  padding: 10px;  /* inner spacing */
+}

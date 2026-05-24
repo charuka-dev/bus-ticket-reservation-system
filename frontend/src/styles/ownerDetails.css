@@ -1,0 +1,62 @@
+/* =========================
+   SEARCH PANEL
+========================= */
+.search-panel {
+  padding: 10px 20px;
+  background: #f1f5f9;
+}
+
+/* =========================
+   SEARCH WRAPPER
+========================= */
+.search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* =========================
+   SEARCH INPUT
+========================= */
+.search-bar {
+  width: 100%;
+  padding: 10px 40px 10px 12px; /* icon space එකට right padding */
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.search-bar:focus {
+  border-color: #3572d3;
+  box-shadow: 0 0 0 2px rgba(53, 114, 211, 0.15);
+}
+
+/* =========================
+   SEARCH ICON
+========================= */
+.search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #64748b;
+  pointer-events: none;
+}
+
+/* =========================
+   DELETE BUTTON
+========================= */
+.delete-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.2s ease;
+}
+
+.delete-btn:hover {
+  color: #b91c1c;
+  transform: scale(1.1);
+}

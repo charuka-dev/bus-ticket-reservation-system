@@ -1,0 +1,293 @@
+
+/* Wrapper (center profile card in full screen) */
+.admin-profile-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: #f4f6fb;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Main profile card (landscape layout) */
+.admin-profile-card {
+  width: 800px;
+  min-height: 380px;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  display: flex;
+  position: relative;
+}
+
+/* Left side gradient panel (avatar area) */
+.profile-left-panel {
+  flex: 1.2;
+  background: linear-gradient(135deg, #4f46e5, #3b82f6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+
+  /* diagonal cut design */
+  clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+  padding-right: 40px;
+}
+
+/* Right side form panel */
+.profile-right-panel {
+  flex: 2;
+  padding: 40px 40px 40px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Avatar container */
+.profile-avatar-wrapper {
+  position: relative;
+  width: 160px;
+  height: 160px;
+}
+
+/* Profile image */
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid white;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.18);
+  background: white;
+}
+
+/* Camera upload icon */
+.camera-icon {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 38px;
+  height: 38px;
+  background: #2563eb;
+  color: white;
+  border-radius: 50%;
+  border: 3px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: 0.2s ease-in-out;
+}
+
+/* Hover effect for camera icon */
+.camera-icon:hover {
+  transform: scale(1.1);
+  background: #3b82f6;
+}
+
+/* Profile name text */
+.profile-name {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+/* Role text */
+.profile-role {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 25px 0;
+}
+
+/* Form container */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Row for grouping inputs */
+.form-row {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Individual input group */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+/* Labels */
+.profile-form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+/* Input fields */
+.profile-form input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+  transition: 0.2s;
+  background: #f8fafc;
+  box-sizing: border-box;
+}
+
+/* Input focus effect */
+.profile-form input:focus {
+  border-color: #3b82f6;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Password wrapper */
+.password-input {
+  position: relative;
+  width: 100%;
+}
+
+/* space for eye icon */
+.password-input input {
+  padding-right: 42px;
+}
+
+/* Eye icon inside password field */
+.eye-inside {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #64748b;
+  font-size: 18px;
+}
+
+/* Hover effect for eye icon */
+.eye-inside:hover {
+  color: #2563eb;
+}
+
+/* Save button */
+.save-btn {
+  margin-top: 10px;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* Save button hover */
+.save-btn:hover {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+/* Disabled save button */
+.save-btn:disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Popup overlay */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* Popup box */
+.popup-box {
+  width: 320px;
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  text-align: center;
+}
+
+/* Success popup */
+.popup-box.success {
+  border-top: 6px solid #10b981;
+}
+
+/* Error popup */
+.popup-box.error {
+  border-top: 6px solid #ef4444;
+}
+
+/* Popup message */
+.popup-box p {
+  margin: 0 0 20px 0;
+  font-size: 15px;
+  color: #334155;
+  font-weight: 500;
+}
+
+/* Popup button */
+.popup-box button {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Responsive design (mobile/tablet) */
+@media (max-width: 830px) {
+  .admin-profile-card {
+    width: 100%;
+    max-width: 400px;
+    flex-direction: column;
+  }
+
+  .profile-left-panel {
+    clip-path: none;
+    padding: 30px 20px;
+  }
+
+  .profile-right-panel {
+    padding: 30px 20px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .profile-name {
+    font-size: 24px;
+    text-align: center;
+  }
+
+  .profile-role {
+    text-align: center;
+  }
+}
