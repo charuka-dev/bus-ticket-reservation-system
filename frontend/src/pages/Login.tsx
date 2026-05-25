@@ -12,9 +12,10 @@ import {
     Loader2,
     CheckCircle,
 } from 'lucide-react';
-import axiosClient from '../lib/axios';
 import { useNavigate, Link } from 'react-router-dom';
 import clsx from 'clsx';
+import { authService } from '../services/authService';
+import { useToast } from '../contexts/ToastContext';
 
 // --- Zod Schema ---
 const loginSchema = z.object({
@@ -77,6 +78,7 @@ export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const { success, error } = useToast();
 
     const {
         register,
@@ -97,14 +99,15 @@ export default function Login() {
         setIsLoading(true);
         setServerError(null);
         try {
-            const response = await axiosClient.post('/auth/login', data);
-            const { token, role } = response.data;
+            const userAccount = await authService.loginUser(data.email, data.password, data.role);
+            
+            // Optionally store role if needed elsewhere without checking DB again
+            localStorage.setItem('role', userAccount.role);
 
-            localStorage.setItem('token', token);
-            localStorage.setItem('role', role);
+            success('Successfully logged in!');
 
             // Redirect based on role
-            switch (role) {
+            switch (userAccount.role) {
                 case 'CUSTOMER':
                     navigate('/customer/dashboard');
                     break;
@@ -117,11 +120,16 @@ export default function Login() {
                 default:
                     navigate('/');
             }
-        } catch (error: any) {
-            console.error('Login failed:', error);
-            setServerError(
-                error.response?.data?.message || 'Login failed. Please try again.'
-            );
+        } catch (err: any) {
+            console.error('Login failed:', err);
+            let msg = err.code ? err.message : (err.message || 'Login failed. Please try again.');
+            
+            if (err.code === 'auth/invalid-credential' || (err.message && err.message.includes('auth/invalid-credential'))) {
+                msg = 'Incorrect email or password. Please try again.';
+            }
+            
+            setServerError(msg);
+            error(msg);
         } finally {
             setIsLoading(false);
         }

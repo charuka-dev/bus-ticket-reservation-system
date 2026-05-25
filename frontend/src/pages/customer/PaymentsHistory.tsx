@@ -38,14 +38,41 @@ const MOCK_PAYMENTS: PaymentRecord[] = [
     }
 ];
 
+import { authService } from '../../services/authService';
+import { bookingService } from '../../services/bookingService';
+
 export default function PaymentsHistory() {
     const [payments, setPayments] = useState<PaymentRecord[]>([]);
     const [filter, setFilter] = useState<'ALL' | 'PAID' | 'FAILED' | 'REFUNDED'>('ALL');
     const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Simulate API fetch
-        setPayments(MOCK_PAYMENTS);
+        const fetchPayments = async () => {
+            try {
+                const user = await authService.getCurrentCustomerProfile();
+                if (!user) return;
+
+                const firebasePayments = await bookingService.getPaymentHistory(user.uid);
+                
+                const mappedPayments: PaymentRecord[] = firebasePayments.map(p => ({
+                    paymentId: p.id || 'N/A',
+                    bookingId: p.bookingId,
+                    amount: p.amount,
+                    dateTime: p.paymentDate,
+                    status: p.status === 'SUCCESS' ? 'PAID' : p.status as any,
+                    method: p.method === 'CREDIT_CARD' || p.method === 'DEBIT_CARD' ? 'CARD' : 'ONLINE'
+                }));
+
+                setPayments(mappedPayments);
+            } catch (error) {
+                console.error("Failed to fetch payments", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPayments();
     }, []);
 
     const filteredPayments = payments.filter(payment => {
@@ -94,7 +121,11 @@ export default function PaymentsHistory() {
                 </div>
             </div>
 
-            <PaymentsTable payments={filteredPayments} />
+            {loading ? (
+                <div className="flex justify-center p-10"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
+            ) : (
+                <PaymentsTable payments={filteredPayments} />
+            )}
         </div>
     );
 }

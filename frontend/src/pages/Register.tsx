@@ -12,17 +12,21 @@ import {
     CreditCard,
     Lock,
     CheckCircle,
+    Building2
 } from 'lucide-react';
-import axiosClient from '../lib/axios';
 import { useNavigate, Link } from 'react-router-dom';
 import clsx from 'clsx';
+import { authService, type RegisterData, type RegisterOwnerData } from '../services/authService';
+import { useToast } from '../contexts/ToastContext';
 
 // --- Zod Schema ---
 const registerSchema = z.object({
+    role: z.enum(['CUSTOMER', 'OWNER']),
     name: z.string().min(1, 'Full Name is required'),
     email: z.string().email('Invalid email address'),
     phone: z.string().regex(/^\d{10}$/, 'Phone number must be 10 digits'),
-    nic: z.string().min(1, 'NIC is required'),
+    nic: z.string().optional(),
+    companyName: z.string().optional(),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string().min(6, 'Confirm Password must be at least 6 characters'),
     agreeTerms: z.boolean().refine((val) => val === true, {
@@ -31,7 +35,14 @@ const registerSchema = z.object({
 }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ['confirmPassword'],
-});
+}).refine((data) => {
+    if (data.role === 'CUSTOMER') return !!data.nic && data.nic.trim().length > 0;
+    return true;
+}, { message: 'NIC is required', path: ['nic'] })
+.refine((data) => {
+    if (data.role === 'OWNER') return !!data.companyName && data.companyName.trim().length > 0;
+    return true;
+}, { message: 'Company Name is required', path: ['companyName'] });
 
 type RegisterFormInputs = z.infer<typeof registerSchema>;
 
@@ -40,17 +51,23 @@ export default function Register() {
     const [serverError, setServerError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const navigate = useNavigate();
+    const { success, error } = useToast();
 
     const {
         register,
         handleSubmit,
+        setValue,
+        watch,
         formState: { errors },
     } = useForm<RegisterFormInputs>({
         resolver: zodResolver(registerSchema),
         defaultValues: {
-            agreeTerms: undefined, // ensure it's controlled or handled correctly
+            role: 'CUSTOMER',
+            agreeTerms: undefined,
         }
     });
+
+    const selectedRole = watch('role');
 
     const onSubmit = async (data: RegisterFormInputs) => {
         setIsLoading(true);
@@ -58,31 +75,42 @@ export default function Register() {
         setSuccessMessage(null);
 
         try {
-            // payload matches requirement
-            const payload = {
-                role: "CUSTOMER",
-                name: data.name,
-                email: data.email,
-                phone: data.phone,
-                nic: data.nic,
-                password: data.password
-            };
+            if (data.role === 'CUSTOMER') {
+                const payload: RegisterData = {
+                    role: "CUSTOMER",
+                    name: data.name,
+                    email: data.email,
+                    phone: data.phone,
+                    nic: data.nic!,
+                    password: data.password
+                };
+                await authService.registerCustomer(payload);
+                setSuccessMessage('Registration successful! Redirecting to login...');
+                success('Account created successfully!');
+            } else {
+                const payload: RegisterOwnerData = {
+                    role: "OWNER",
+                    name: data.name,
+                    email: data.email,
+                    phone: data.phone,
+                    companyName: data.companyName!,
+                    password: data.password
+                };
+                await authService.registerOwner(payload);
+                setSuccessMessage('Registration successful! Your account is pending approval.');
+                success('Owner account created! Waiting for approval.');
+            }
 
-            await axiosClient.post('/auth/register', payload);
-
-            setSuccessMessage('Registration successful! Redirecting to login...');
-
-            // Delay redirect to show success message
             setTimeout(() => {
                 navigate('/login');
-            }, 2000);
+            }, 3000);
 
-        } catch (error: any) {
-            console.error('Registration failed:', error);
-            setServerError(
-                error.response?.data?.message || 'Registration failed. Please try again.'
-            );
-            setIsLoading(false); // Only stop loading on error, on success we keep loading/success state until redirect
+        } catch (err: any) {
+            console.error('Registration failed:', err);
+            const msg = err.code ? err.message : (err.message || 'Registration failed. Please try again.');
+            setServerError(msg);
+            error(msg);
+            setIsLoading(false);
         }
     };
 
@@ -110,6 +138,35 @@ export default function Register() {
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    
+                    {/* Role Selection Tabs */}
+                    <div className="flex p-1 bg-gray-100 rounded-xl relative mb-6">
+                        {/* Active Background Indicator */}
+                        <motion.div
+                            layoutId="register-role-indicator"
+                            className="absolute top-1 bottom-1 bg-white rounded-lg shadow-sm border border-gray-200"
+                            initial={false}
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                            style={{
+                                width: 'calc(50% - 0.5rem)',
+                                left: selectedRole === 'CUSTOMER' ? '0.25rem' : 'calc(50% + 0.25rem)'
+                            }}
+                        />
+
+                        {['CUSTOMER', 'OWNER'].map((role) => (
+                            <button
+                                key={role}
+                                type="button"
+                                onClick={() => setValue('role', role as any)}
+                                className={clsx(
+                                    "flex-1 relative z-10 py-2 text-sm font-medium rounded-lg transition-colors capitalize",
+                                    selectedRole === role ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
+                                )}
+                            >
+                                {role.toLowerCase()}
+                            </button>
+                        ))}
+                    </div>
 
                     {/* Full Name */}
                     <div className="space-y-1">
@@ -147,7 +204,7 @@ export default function Register() {
                         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                     </div>
 
-                    {/* Phone & NIC Row */}
+                    {/* Phone & Dynamic Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <label className="block text-sm font-medium text-gray-700">Phone Number</label>
@@ -166,22 +223,43 @@ export default function Register() {
                             {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="block text-sm font-medium text-gray-700">NIC</label>
-                            <div className="relative">
-                                <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <input
-                                    {...register('nic')}
-                                    type="text"
-                                    placeholder="NIC Number"
-                                    className={clsx(
-                                        "w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border transition focus:ring-2 focus:outline-none",
-                                        errors.nic ? "border-red-500 focus:ring-red-200" : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
-                                    )}
-                                />
-                            </div>
-                            {errors.nic && <p className="text-red-500 text-xs mt-1">{errors.nic.message}</p>}
-                        </div>
+                        {selectedRole === 'CUSTOMER' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-1">
+                                <label className="block text-sm font-medium text-gray-700">NIC</label>
+                                <div className="relative">
+                                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input
+                                        {...register('nic')}
+                                        type="text"
+                                        placeholder="NIC Number"
+                                        className={clsx(
+                                            "w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border transition focus:ring-2 focus:outline-none",
+                                            errors.nic ? "border-red-500 focus:ring-red-200" : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
+                                        )}
+                                    />
+                                </div>
+                                {errors.nic && <p className="text-red-500 text-xs mt-1">{errors.nic.message}</p>}
+                            </motion.div>
+                        )}
+
+                        {selectedRole === 'OWNER' && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-1">
+                                <label className="block text-sm font-medium text-gray-700">Company Name</label>
+                                <div className="relative">
+                                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input
+                                        {...register('companyName')}
+                                        type="text"
+                                        placeholder="Company Ltd."
+                                        className={clsx(
+                                            "w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border transition focus:ring-2 focus:outline-none",
+                                            errors.companyName ? "border-red-500 focus:ring-red-200" : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
+                                        )}
+                                    />
+                                </div>
+                                {errors.companyName && <p className="text-red-500 text-xs mt-1">{errors.companyName.message}</p>}
+                            </motion.div>
+                        )}
                     </div>
 
                     {/* Password */}
@@ -254,7 +332,7 @@ export default function Register() {
                                 exit={{ opacity: 0, height: 0 }}
                                 className="p-3 bg-green-50 text-green-600 text-sm rounded-lg border border-green-100 flex items-center"
                             >
-                                <CheckCircle className="w-5 h-5 mr-2" /> {successMessage}
+                                <CheckCircle className="w-5 h-5 mr-2 shrink-0" /> {successMessage}
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -270,7 +348,7 @@ export default function Register() {
                         {isLoading ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
                         ) : (
-                            "Create Account"
+                            selectedRole === 'CUSTOMER' ? "Create Customer Account" : "Register as Owner"
                         )}
                     </motion.button>
 

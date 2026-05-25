@@ -11,9 +11,11 @@ import {
     LogOut,
     ChevronLeft,
     ChevronRight,
-    Bus
+    Bus,
+    Wallet
 } from 'lucide-react';
 import clsx from 'clsx';
+import { authService } from '../services/authService';
 
 const menuItems = [
     { path: '/customer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -21,6 +23,7 @@ const menuItems = [
     { path: '/customer/bookings', label: 'My Bookings', icon: Ticket },
     { path: '/customer/payments', label: 'Payments', icon: History },
     { path: '/customer/track', label: 'Track Bus', icon: MapPin },
+    { path: '/customer/wallet', label: 'Wallet', icon: Wallet },
     { path: '/customer/profile', label: 'Profile', icon: User },
 ];
 
@@ -28,9 +31,15 @@ export default function Sidebar() {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/login');
+    const handleLogout = async () => {
+        try {
+            await authService.logoutUser();
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            navigate('/login');
+        } catch (error) {
+            console.error('Logout failed', error);
+        }
     };
 
     return (

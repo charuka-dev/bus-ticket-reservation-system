@@ -4,6 +4,7 @@ import { Search, Filter, Ticket } from 'lucide-react';
 import BookingMiniCard from '../../components/booking/BookingMiniCard';
 import TicketView from '../../components/booking/TicketView';
 import type { BookingDetails } from '../../types/booking';
+import { useToast } from '../../contexts/ToastContext';
 
 // Mock Data
 const MOCK_BOOKINGS: BookingDetails[] = [
@@ -64,16 +65,104 @@ const MOCK_BOOKINGS: BookingDetails[] = [
     }
 ];
 
+import { authService } from '../../services/authService';
+import { bookingService } from '../../services/bookingService';
+
 export default function MyBookings() {
     const [bookings, setBookings] = useState<BookingDetails[]>([]);
     const [selectedBooking, setSelectedBooking] = useState<BookingDetails | null>(null);
     const [filter, setFilter] = useState<'all' | 'confirmed' | 'cancelled'>('all');
     const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
+    const { success, error } = useToast();
+
+    const fetchMyBookings = async () => {
+        try {
+            setLoading(true);
+            const user = await authService.getCurrentCustomerProfile();
+                if (!user) return;
+
+                const firebaseBookings = await bookingService.getMyBookings(user.uid);
+                
+                // Map Firebase Booking to UI BookingDetails
+                const mappedBookings: BookingDetails[] = firebaseBookings.map(b => {
+                    // Use the stored travel date (YYYY-MM-DD); fall back to bookingDate
+                    const rawDate = b.date || b.bookingDate;
+                    const travelDate = rawDate
+                        ? new Date(
+                              rawDate.length === 10           // "2026-05-25" — date-only, parse as local
+                                  ? rawDate + 'T00:00:00'
+                                  : rawDate
+                          ).toLocaleDateString('en-US', {
+                              day: 'numeric', month: 'short', year: 'numeric',
+                          })
+                        : '—';
+
+                    return {
+                        bookingId:    b.id || 'N/A',
+                        firebaseBookingId: b.id,
+                        tripId:       b.tripId,
+                        customerName: user.name,
+                        route: {
+                            from: b.tripDetails?.from || 'Unknown',
+                            to:   b.tripDetails?.to   || 'Unknown',
+                        },
+                        busNo:        b.tripDetails?.busNumber || 'TBD',
+                        date:         travelDate,
+                        time:         b.tripDetails?.departureTime || '—',
+                        arrivalTime:  b.tripDetails?.arrivalTime   || '—',
+                        // Real seat numbers from Firestore
+                        selectedSeats: b.seatNumbers.map((seatNo, i) => ({
+                            id: `s-${i}`, seatNo, status: 'booked' as const,
+                            price: b.seatCount > 0 ? Math.round(b.totalAmount / b.seatCount) : 0,
+                        })),
+                        totalAmount:  b.totalAmount,
+                        email:        user.email,
+                        phoneNumber:  user.phone,
+                        paymentStatus: b.paymentStatus === 'PAID' ? 'completed' : 'pending',
+                        status:       b.status.toLowerCase() as any,
+                        qrCode:       b.qrCode,
+                    };
+                });
+                
+                setBookings(mappedBookings);
+            } catch (err) {
+                console.error("Failed to load bookings", err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
     useEffect(() => {
-        // Simulate API fetch
-        setBookings(MOCK_BOOKINGS);
+        fetchMyBookings();
     }, []);
+
+    const handleCancelBooking = async (booking: BookingDetails) => {
+        if (!window.confirm(`Are you sure you want to cancel booking ${booking.bookingId}? \nLKR ${booking.totalAmount.toLocaleString()} will be refunded to your wallet.`)) {
+            return;
+        }
+
+        try {
+            const user = await authService.getCurrentCustomerProfile();
+            if (!user) return;
+            
+            // Actually call the service, using firebaseBookingId if available, fallback to bookingId
+            const docId = booking.firebaseBookingId || booking.bookingId;
+            await bookingService.cancelBooking(docId, user.uid, booking.totalAmount);
+            
+            success(`Booking ${booking.bookingId} cancelled successfully! Refund added to wallet.`);
+            
+            // Reload bookings
+            fetchMyBookings();
+            
+            if (selectedBooking?.bookingId === booking.bookingId) {
+                setSelectedBooking(null);
+            }
+        } catch (err: any) {
+            console.error('Failed to cancel booking:', err);
+            error(err.message || 'Failed to cancel booking. Please try again.');
+        }
+    };
 
     const filteredBookings = bookings.filter(booking => {
         if (!booking.route || !booking.bookingId) return false;
@@ -124,6 +213,9 @@ export default function MyBookings() {
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-8 min-h-0 overflow-hidden">
                 {/* Left Column: Bookings List */}
                 <div className="lg:col-span-1 overflow-y-auto pr-2 space-y-4 h-full custom-scrollbar">
+                    {loading ? (
+                         <div className="flex justify-center p-10"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
+                    ) : (
                     <AnimatePresence>
                         {filteredBookings.length > 0 ? (
                             filteredBookings.map((booking) => (
@@ -132,6 +224,7 @@ export default function MyBookings() {
                                     booking={booking}
                                     isSelected={selectedBooking?.bookingId === booking.bookingId}
                                     onClick={() => setSelectedBooking(booking)}
+                                    onCancel={() => handleCancelBooking(booking)}
                                 />
                             ))
                         ) : (
@@ -145,6 +238,7 @@ export default function MyBookings() {
                             </motion.div>
                         )}
                     </AnimatePresence>
+                    )}
                 </div>
 
                 {/* Right Column: Ticket Preview */}

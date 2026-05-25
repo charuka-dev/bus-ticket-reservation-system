@@ -7,19 +7,26 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seed": "ts-node scripts/seedFirebase.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@react-google-maps/api": "^2.20.8",
     "axios": "^1.13.5",
     "clsx": "^2.1.1",
+    "firebase": "^12.13.0",
     "framer-motion": "^12.34.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "lucide-react": "^0.574.0",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.71.1",
     "react-router-dom": "^7.13.0",
     "tailwind-merge": "^3.4.1",
+    "ts-node": "^10.9.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {

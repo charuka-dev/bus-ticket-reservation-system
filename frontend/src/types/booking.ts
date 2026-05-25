@@ -38,7 +38,9 @@ export interface BookingDetails {
     date: string;
     time: string;
     busNo: string;
-    arrivalTime: string; // Added for ticket view
+    arrivalTime: string;
+    qrCode?: string;       // real QR payload from Firestore
+    firebaseBookingId?: string; // raw Firestore doc ID for navigation
 }
 
 export interface PaymentDetails {
@@ -59,6 +61,7 @@ export interface PaymentRecord {
 
 export interface TrackingTicket {
     bookingId: string;
+    busId?: string;
     busNo: string;
     route: {
         from: string;

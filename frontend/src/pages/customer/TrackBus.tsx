@@ -29,43 +29,96 @@ const MOCK_TICKETS: TrackingTicket[] = [
     }
 ];
 
+import { authService } from '../../services/authService';
+import { bookingService } from '../../services/bookingService';
+import { trackingService, type LocationData } from '../../services/trackingService';
+
 export default function TrackBus() {
     const [tickets, setTickets] = useState<TrackingTicket[]>([]);
     const [selectedTicket, setSelectedTicket] = useState<TrackingTicket | null>(null);
     const [busLocation, setBusLocation] = useState<BusLocation | undefined>(undefined);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setTickets(MOCK_TICKETS);
+        const fetchTickets = async () => {
+            try {
+                const user = await authService.getCurrentCustomerProfile();
+                if (!user) return;
+
+                const bookings = await bookingService.getMyBookings(user.uid);
+                const activeBookings = bookings.filter(b => b.status === 'CONFIRMED');
+
+                const mappedTickets: TrackingTicket[] = activeBookings.map(b => ({
+                    bookingId: b.id || 'N/A',
+                    busId: b.busId || b.tripId, // Use the resolved busId, fallback to tripId
+                    busNo: b.tripDetails?.busNumber || 'TBD',
+                    route: { 
+                        from: b.tripDetails?.from || 'Unknown', 
+                        to: b.tripDetails?.to || 'Unknown' 
+                    },
+                    // Ensure date is properly extracted using the travel date, avoiding Invalid Date crashes
+                    date: b.date || b.bookingDate?.split('T')[0] || new Date().toISOString().split('T')[0],
+                    departureTime: b.tripDetails?.departureTime || '',
+                    seatNos: b.seatNumbers || [`${b.seatCount} Seat(s)`],
+                    status: b.status as 'CONFIRMED',
+                    used: false
+                }));
+
+                setTickets(mappedTickets);
+            } catch (error) {
+                console.error("Failed to fetch tickets", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTickets();
     }, []);
 
-    // Polling Effect
+    // RTDB Live Tracking Effect
     useEffect(() => {
-        let interval: ReturnType<typeof setInterval>;
+        let unsubscribe: (() => void) | undefined;
 
-        if (selectedTicket && selectedTicket.date === new Date().toISOString().split('T')[0]) {
-            // Initial poll
-            updateLocation();
+        if (selectedTicket) {
+            // Check if ticket date is today
+            const today = new Date().toISOString().split('T')[0];
+            const isToday = selectedTicket.date === today;
 
-            interval = setInterval(() => {
-                updateLocation();
-            }, 5000);
+            // In a real app, you might want to show tracking even if it's not today just to test, 
+            // but usually it's only active on the day of the trip.
+            // For testing Firebase integration seamlessly, we'll listen anyway if selected.
+            // Replace selectedTicket.busId with a real busId if your trips have them.
+            
+            const busIdToTrack = selectedTicket.busId || 'mock-bus-id';
+
+            unsubscribe = trackingService.listenLiveBusLocation(busIdToTrack, (data: LocationData | null) => {
+                if (data) {
+                    setBusLocation({
+                        lat: data.latitude,
+                        lng: data.longitude,
+                        updatedAt: data.updatedAt || new Date().toISOString(),
+                        speed: data.speed || 0,
+                        nextStop: 'Updating...' // Could fetch next stop logic here
+                    });
+                } else {
+                    // Fallback to mock movement if no data in Firebase yet for this bus, just to show UI
+                    setBusLocation({
+                        lat: 6.9271 + (Math.random() * 0.01),
+                        lng: 79.8612 + (Math.random() * 0.01),
+                        updatedAt: new Date().toISOString(),
+                        speed: Math.floor(40 + Math.random() * 20),
+                        nextStop: 'Connecting to GPS...'
+                    });
+                }
+            });
         } else {
             setBusLocation(undefined);
         }
 
-        return () => clearInterval(interval);
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, [selectedTicket]);
-
-    const updateLocation = () => {
-        // Simulate live data update
-        setBusLocation({
-            lat: 6.9271 + (Math.random() * 0.01),
-            lng: 79.8612 + (Math.random() * 0.01),
-            updatedAt: new Date().toISOString(),
-            speed: Math.floor(40 + Math.random() * 20),
-            nextStop: ['Peradeniya', 'Mawanella', 'Kadugannawa'][Math.floor(Math.random() * 3)]
-        });
-    };
 
     return (
         <div className="flex flex-col h-[calc(100vh-140px)] gap-6">
@@ -82,7 +135,9 @@ export default function TrackBus() {
                     </h3>
 
                     <div className="space-y-4 pb-4">
-                        {tickets.length > 0 ? (
+                        {loading ? (
+                            <div className="flex justify-center p-10"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
+                        ) : tickets.length > 0 ? (
                             tickets.map(ticket => (
                                 <UpcomingTicketCard
                                     key={ticket.bookingId}
@@ -109,7 +164,7 @@ export default function TrackBus() {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
                                 transition={{ duration: 0.3 }}
-                                className="h-full"
+                                className="h-full min-h-[500px] w-full"
                             >
                                 <TrackingMapPanel
                                     location={busLocation}

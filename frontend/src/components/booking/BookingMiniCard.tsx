@@ -1,14 +1,15 @@
 import { motion } from 'framer-motion';
-import { Bus, Calendar, Clock, ArrowRight } from 'lucide-react';
+import { Bus, Calendar, Clock, ArrowRight, Trash2 } from 'lucide-react';
 import type { BookingDetails } from '../../types/booking';
 
 interface BookingMiniCardProps {
     booking: BookingDetails;
     isSelected: boolean;
     onClick: () => void;
+    onCancel?: () => void;
 }
 
-export default function BookingMiniCard({ booking, isSelected, onClick }: BookingMiniCardProps) {
+export default function BookingMiniCard({ booking, isSelected, onClick, onCancel }: BookingMiniCardProps) {
     return (
         <motion.div
             layout
@@ -32,7 +33,21 @@ export default function BookingMiniCard({ booking, isSelected, onClick }: Bookin
                         {booking.status.toUpperCase()}
                     </span>
                 </div>
-                <span className="text-sm font-bold text-gray-900">LKR {booking.totalAmount.toLocaleString()}</span>
+                <div className="flex items-center space-x-3">
+                    <span className="text-sm font-bold text-gray-900">LKR {booking.totalAmount.toLocaleString()}</span>
+                    {booking.status === 'confirmed' && onCancel && (
+                        <button 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onCancel();
+                            }}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Cancel Booking"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="flex items-center justify-between mb-4">

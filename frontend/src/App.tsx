@@ -10,6 +10,7 @@ import TrackBus from './pages/customer/TrackBus';
 import ProfileSettings from './pages/customer/ProfileSettings';
 import BookingPage from './pages/customer/BookingPage';
 import TicketPage from './pages/customer/TicketPage';
+import WalletPage from './pages/customer/WalletPage';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="bookings" element={<MyBookings />} />
           <Route path="payments" element={<PaymentsHistory />} />
           <Route path="track" element={<TrackBus />} />
+          <Route path="wallet" element={<WalletPage />} />
           <Route path="profile" element={<ProfileSettings />} />
           <Route path="book/:tripId" element={<BookingPage />} />
           <Route path="ticket/:bookingId" element={<TicketPage />} />
