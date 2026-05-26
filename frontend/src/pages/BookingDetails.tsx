@@ -9,35 +9,37 @@ const BookingDetails = () => {
 
   useEffect(() => {
     const fetchBookings = async () => {
+      // Retrieve the logged-in owner's ID from local storage
       const ownerId = localStorage.getItem("ownerId");
       if (!ownerId) { setLoading(false); return; }
 
       try {
-        // 1. මේ Owner ගේ බස් ටික හොයාගන්න
+        // Step 1: Query and fetch all buses assigned to this specific owner
         const busQuery = query(collection(db, "buses"), where("ownerId", "==", ownerId));
         const busSnapshot = await getDocs(busQuery);
         const myBusData = busSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         const myBusIds = myBusData.map(d => d.id);
 
+        // If the owner has no buses registered, stop processing
         if (myBusIds.length === 0) { setLoading(false); return; }
 
-        // 2. ඒ බස් වල බුකින්ස් ටික ගන්න
+        // Step 2: Fetch all bookings matching the owner's bus IDs
         const bQuery = query(collection(db, "bookings"), where("busId", "in", myBusIds));
         const bSnapshot = await getDocs(bQuery);
 
-        // 3. හැම බුකින් එකකටම අදාළ මගියාගේ නම, බස් නම්බර් සහ රූට් එක ගන්න
+        // Step 3: Iterate through each booking to resolve sub-collection data (passenger, bus, and route details)
         const detailedBookings = await Promise.all(
           bSnapshot.docs.map(async (bDoc) => {
             const bData = bDoc.data();
             
-            // මගියාගේ නම (customers collection එකෙන්)
+            // Resolve passenger name from the "customers" collection
             const custSnap = await getDoc(doc(db, "customers", bData.customerId || " "));
             const custName = custSnap.exists() ? custSnap.data().name : "Unknown";
             
-            // බස් එකේ විස්තර (busNo)
+            // Find corresponding bus details from the locally cached myBusData array
             const busInfo = myBusData.find(b => b.id === bData.busId);
             
-            // රූට් එකේ විස්තර (routes collection එකෙන්)
+            // Resolve route info (From - To locations) from the "routes" collection
             let routeName = "N/A";
             if (busInfo?.routeId) {
                 const routeSnap = await getDoc(doc(db, "routes", busInfo.routeId));
@@ -47,6 +49,7 @@ const BookingDetails = () => {
                 }
             }
 
+            // Construct and return the fully populated booking record object
             return { 
               id: bDoc.id, 
               ...bData, 

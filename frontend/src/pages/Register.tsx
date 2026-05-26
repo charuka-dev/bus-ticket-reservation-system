@@ -29,48 +29,45 @@ export default function Register() {
         resolver: zodResolver(registerSchema),
     });
 
-    // 🟢 ඩේටාබේස් එකේ දැනට තියෙන ලොකුම ID එක හොයලා, ඊළඟ ID එක (Max + 1) හදන නියම ලොජික් එක
+    // Automatically calculates the next sequential ID (Max + 1)
     const getNextOwnerId = async () => {
         const snapshot = await getDocs(collection(db, 'owners'));
         
         if (snapshot.empty) {
-            return 'owner001'; // ඩේටාබේස් එක සම්පූර්ණයෙන්ම හිස් නම් මුලින්ම owner001 කියලා දෙනවා
+            return 'owner001'; 
         }
 
         let maxNum = 0;
-
-        // ඩේටාබේස් එකේ දැනට තියෙන හැම document ID එකක්ම චෙක් කරනවා
         snapshot.docs.forEach((doc) => {
-            const id = doc.id; // උදා: "owner003"
+            const id = doc.id; 
             if (id.startsWith('owner')) {
-                // "owner" කෑල්ල අයින් කරලා "003" කියන එක Integer (Number) එකක් කරගන්නවා
                 const num = parseInt(id.replace('owner', ''), 10);
                 if (num > maxNum) {
-                    maxNum = num; // දැනට හම්බවුණු ලොකුම අංකය update කරගන්නවා
+                    maxNum = num; 
                 }
             }
         });
 
-        // අන්තිමටම හම්බවුණු ලොකුම අංකයට 1ක් එකතු කරනවා (උදා: 3 + 1 = 4)
         const nextNum = maxNum + 1;
-        return `owner${String(nextNum).padStart(3, '0')}`; // "owner004" විදිහට රිටර්න් කරනවා
+        return `owner${String(nextNum).padStart(3, '0')}`; 
     };
 
     const onSubmit = async (data: RegisterInputs) => {
         setIsLoading(true);
         try {
-            // 1. Firebase Auth එකේ රෙජිස්ටර් කරනවා
-            await createUserWithEmailAndPassword(auth, data.email, data.password);
-            
-            // 2. පිළිවෙල ID එක ගන්නවා (උදා: owner004)
+            // 1. Create official authentication profile inside Firebase Auth
+            const userCredential = await createUserWithEmailAndPassword(auth, data.email.trim().toLowerCase(), data.password);
+            const firebaseUser = userCredential.user;
+
+            // 2. Fetch next custom serial ID (e.g., owner010)
             const customOwnerId = await getNextOwnerId();
 
-            // 3. 🔴 හැමතැනටම අලුතින් හැදුණු පිළිවෙල ID එක විතරක්ම දාලා සේව් කරනවා!
+            // 3. Save profile data using standard simple-case configurations to avoid lookup bugs
             await setDoc(doc(db, 'owners', customOwnerId), {
                 ownerCustomId: customOwnerId, 
-                uid: customOwnerId, // 👈 uid field එකටත් owner00X ම සේව් වෙනවා!
+                uid: firebaseUser.uid, // 🟢 FIXED: Stores the ACTUAL generated Firebase Authentication UID string
                 name: data.name,
-                email: data.email,
+                email: data.email.trim().toLowerCase(), // 🟢 FIXED: Forces lowercase to eliminate case-mismatch conflicts
                 phone: data.phone,
                 companyName: data.companyName,
                 role: 'OWNER',
@@ -79,7 +76,7 @@ export default function Register() {
             });
             
             success(`Registration successful! Your ID is ${customOwnerId}. Waiting for admin approval.`);
-            navigate('/'); 
+            navigate('/login'); 
             
         } catch (err: any) {
             error(err.message || 'Registration failed');
@@ -90,7 +87,7 @@ export default function Register() {
 
     return (
         <div className="min-h-screen w-full flex bg-slate-900 overflow-hidden">
-            {/* Left Hero Section */}
+            {/* Left Hero Panel */}
             <div className="hidden lg:flex flex-col justify-center w-1/2 px-20 relative border-r border-white/5">
                 <div className="relative z-10 space-y-8">
                     <div className="w-14 h-14 bg-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
@@ -113,7 +110,7 @@ export default function Register() {
                 <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/10 rounded-full blur-[120px]" />
             </div>
 
-            {/* Right Form Section */}
+            {/* Right Interactive Registration Form */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-gray-50">
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 md:p-10 border border-gray-100">
                     <h2 className="text-3xl font-bold text-gray-900 mb-8">Business Registration</h2>

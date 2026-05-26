@@ -28,7 +28,7 @@ const Sidebar = ({ onSelect }: Props) => {
 
   return (
     <>
-      {/* 1. සැබෑ සයිඩ්බාර් එක (Fixed Layout) */}
+      {/* 1. Main Sidebar Component Container (Fixed Layout Setup) */}
       <div 
         className="sidebar-container" 
         style={{ 
@@ -41,18 +41,23 @@ const Sidebar = ({ onSelect }: Props) => {
           flexDirection: 'column',
           justifyContent: 'space-between',
           boxSizing: 'border-box',
-          zIndex: 999 /* හැමදේටම උඩින් තියෙන්න */
+          zIndex: 999 /* Ensures sidebar stays on top of all content */
         }}
       >
-        {/* උඩ කොටස: Brand සහ Menu */}
+        {/* Top Content Group: Brand Identity & Nav Menu */}
         <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+          
           {/* Luxury Brand Header */}
           <div className="sidebar-brand">
+            {/* SPARKLE ANIMATION INDICATOR: 
+              This character '✧' is animated using CSS Keyframes in 'dashboard.css'.
+              Targeted by className 'brand-sparkle' to apply infinite scaling and glowing loops.
+            */}
             <span className="brand-sparkle">✧</span>
             <h2 className="brand-title">Luxe Transit</h2>
           </div>
 
-          {/* Navigation Menu */}
+          {/* Navigation Menu Links */}
           <nav className="sidebar-menu" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <button 
               className={`menu-item ${activePage === "approve" ? "active" : ""}`} 
@@ -91,7 +96,7 @@ const Sidebar = ({ onSelect }: Props) => {
           </nav>
         </div>
 
-        {/* පල්ලෙහාම කොටස: Profile & Logout */}
+        {/* Bottom Content Group: Profile link & Session termination */}
         <div 
           className="sidebar-footer" 
           style={{ 
@@ -113,8 +118,10 @@ const Sidebar = ({ onSelect }: Props) => {
         </div>
       </div>
 
-      {/* 2. 🪄 මැජික් එක: මේකෙන් සයිඩ්බාර් එක පිටිපස්සෙන් 260px ක ඉඩක් වෙන් කරනවා. 
-          එතකොට දකුණු පැත්තේ තියෙන කිසිම Form එකක් වමෙන් වැහෙන්නේ නැහැ! */}
+      {/* 2. SIDEBAR SPACER BLOCK: 
+        Reserves 260px structural width space on the DOM flow.
+        Prevents right-side dashboard panels/forms from sliding underneath the fixed sidebar layout container.
+      */}
       <div style={{ width: '260px', minWidth: '260px', height: '100vh' }}></div>
     </>
   );

@@ -29,17 +29,34 @@ export default function Login() {
 
   const onSubmit = async (data: LoginInputs) => {
     setIsLoading(true);
+    const normalizedEmail = data.email.trim().toLowerCase(); // 🟢 Normalize user input email string format
+    
     try {
-      // 1. Firebase Auth එකෙන් ලොග් වෙනවා
-      await signInWithEmailAndPassword(auth, data.email, data.password);
+      // Step 1: Authenticate credentials using Firebase Authentication
+      await signInWithEmailAndPassword(auth, normalizedEmail, data.password);
       
-      // 2. Email එකෙන් Database එකේ තියෙන අදාළ Document එක හොයනවා
-      const q = query(collection(db, 'owners'), where("email", "==", data.email));
+      // Step 2: Query Firestore using a dual-case variant spectrum matching map array to resolve database case conflicts
+      const alternateCaseEmail = normalizedEmail.charAt(0).toUpperCase() + normalizedEmail.slice(1);
+      
+      const q = query(
+        collection(db, 'owners'), 
+        where("email", "in", [normalizedEmail, alternateCaseEmail]) // 🟢 FIXED: Matches both simple and capitalized records securely
+      );
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
-        // 3. Database එකේ තියෙන 'ownerCustomId' එක අරගෙන localStorage එකට දාගන්නවා
         const ownerData = querySnapshot.docs[0].data();
+
+        // Step 3: Enforce operational verification and status constraint validation checks
+        const approvalStatus = ownerData.approved ? ownerData.approved.toString().trim().toLowerCase() : "";
+
+        if (approvalStatus !== "approved") {
+          error('Your account registration status is still pending admin approval.');
+          setIsLoading(false);
+          return; // Strictly intercept dashboard frame access routing
+        }
+
+        // Step 4: Extract operational identity keys and cache routing session tokens
         if (ownerData.ownerCustomId) {
             localStorage.setItem("ownerId", ownerData.ownerCustomId);
         }
@@ -72,12 +89,14 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {/* Email Input Field */}
           <div>
             <input {...register('email')} type="email" placeholder="Email Address" 
               className={`w-full px-5 py-4 rounded-xl bg-gray-50 border outline-none focus:ring-2 transition-all ${errors.email ? 'border-red-500 ring-red-100' : 'border-gray-200 focus:border-blue-500 ring-blue-50'}`} />
             {errors.email && <p className="text-red-500 text-xs mt-1 ml-1">{errors.email.message}</p>}
           </div>
 
+          {/* Password Input Field */}
           <div className="relative">
             <input {...register('password')} type={showPassword ? "text" : "password"} placeholder="Password" 
               className={`w-full px-5 py-4 rounded-xl bg-gray-50 border outline-none focus:ring-2 transition-all ${errors.password ? 'border-red-500 ring-red-100' : 'border-gray-200 focus:border-blue-500 ring-blue-50'}`} />
@@ -87,6 +106,7 @@ export default function Login() {
             {errors.password && <p className="text-red-500 text-xs mt-1 ml-1">{errors.password.message}</p>}
           </div>
 
+          {/* Action Trigger Control */}
           <button disabled={isLoading} className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 transition active:scale-95 disabled:opacity-50">
             {isLoading ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : "Access Dashboard"}
           </button>

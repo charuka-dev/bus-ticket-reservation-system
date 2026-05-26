@@ -4,11 +4,13 @@ import { updatePassword, getAuth } from "firebase/auth";
 import { db } from "../firebaseConfig";
 
 const OwnerProfile = ({ ownerId }: { ownerId: string }) => {
+  // --- States ---
   const [profile, setProfile] = useState<any>({});
   const [isEditing, setIsEditing] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // --- Synchronize Profile Data from Firestore ---
   useEffect(() => {
     const fetchProfile = async () => {
       const docSnap = await getDoc(doc(db, "owners", ownerId));
@@ -17,6 +19,7 @@ const OwnerProfile = ({ ownerId }: { ownerId: string }) => {
     fetchProfile();
   }, [ownerId]);
 
+  // --- Action Handler: Update Firestore Profile Metadata ---
   const handleUpdateProfile = async () => {
     try {
       await updateDoc(doc(db, "owners", ownerId), { ...profile });
@@ -27,14 +30,17 @@ const OwnerProfile = ({ ownerId }: { ownerId: string }) => {
     }
   };
 
+  // --- Action Handler: Update Authentication Password Credentials ---
   const handleUpdatePassword = async () => {
     if (newPassword !== confirmPassword) return alert("Passwords do not match!");
+    
     const user = getAuth().currentUser;
     if (user) {
       try {
         await updatePassword(user, newPassword);
         alert("Password updated!");
-        setNewPassword(""); setConfirmPassword("");
+        setNewPassword(""); 
+        setConfirmPassword("");
       } catch (error) {
         alert("Failed to update password. Please log out and log in again.");
       }
@@ -47,10 +53,16 @@ const OwnerProfile = ({ ownerId }: { ownerId: string }) => {
       
       {/* Profile Fields */}
       <div className="space-y-4">
+        {/* Company Name Field - Toggled by editing state */}
         <input value={profile.companyName || ""} onChange={(e) => setProfile({...profile, companyName: e.target.value})} disabled={!isEditing} className="w-full p-3 border rounded-xl" />
+        
+        {/* Email Address Field - Permanently locked to preserve reference integrity */}
         <input value={profile.email || ""} disabled className="w-full p-3 border rounded-xl bg-gray-50" />
+        
+        {/* Contact Phone Field - Toggled by editing state */}
         <input value={profile.phone || ""} onChange={(e) => setProfile({...profile, phone: e.target.value})} disabled={!isEditing} className="w-full p-3 border rounded-xl" />
         
+        {/* Conditional Action Controls based on Mode */}
         {isEditing && (
           <button onClick={handleUpdateProfile} className="w-full py-3 bg-green-600 text-white rounded-xl">Save Profile</button>
         )}
@@ -59,7 +71,7 @@ const OwnerProfile = ({ ownerId }: { ownerId: string }) => {
         )}
       </div>
 
-      {/* Password Section */}
+      {/* Password Management Section */}
       <div className="mt-8 pt-6 border-t">
         <h3 className="font-bold mb-4">Change Password</h3>
         <input type="password" placeholder="New Password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full p-3 border rounded-xl mb-2" />
@@ -69,4 +81,5 @@ const OwnerProfile = ({ ownerId }: { ownerId: string }) => {
     </div>
   );
 };
+
 export default OwnerProfile;

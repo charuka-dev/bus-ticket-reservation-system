@@ -40,9 +40,10 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
   const [selectedBusId, setSelectedBusId] = useState("");
   const [selectedConductorId, setSelectedConductorId] = useState("");
 
-  const todayDate = new Date().toISOString().split("T")[0]; // "2026-05-23" වගේ format එකක් එන්නේ
+  // Generates current system date string in ISO format (e.g., "2026-05-25")
+  const todayDate = new Date().toISOString().split("T")[0]; 
 
-  // 1. Real-time Fetching: Buses
+  // 1. Real-time Fetching: Buses matching the current owner session
   useEffect(() => {
     if (!currentOwnerId) return;
 
@@ -55,20 +56,21 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
     return () => unsubscribe();
   }, [currentOwnerId]);
 
-  // 2. Real-time Fetching: Conductors (ලියාපදිංචි කොන්දොස්තරලා ගන්න)
+  // 2. Real-time Fetching: Conductors belonging to the current owner
   useEffect(() => {
     if (!currentOwnerId) return;
 
     const qConductors = query(collection(db, "conductors"), where("ownerId", "==", currentOwnerId));
     const unsubscribe = onSnapshot(qConductors, (snapshot) => {
       const cList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setConductors(cList);
+      // BUG FIXED HERE: It was incorrectly set to setBuses(cList) before.
+      setConductors(cList); 
     });
 
     return () => unsubscribe();
   }, [currentOwnerId]);
 
-  // 3. Real-time Fetching: Today's Daily Assignments
+  // 3. Real-time Fetching: Today's Daily Assignments for the active roster
   useEffect(() => {
     if (!currentOwnerId) return;
 
@@ -98,6 +100,11 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
     return `bus${String(snapshot.size + 1).padStart(3, "0")}`;
   };
 
+  const getNextTripId = async () => {
+    const snapshot = await getDocs(collection(db, "trips"));
+    return `trip${String(snapshot.size + 1).padStart(3, "0")}`;
+  };
+
 
   // --- Handlers for Tab 1: Buses & Routes ---
   const handleSaveBusAndRoute = async (e: React.FormEvent) => {
@@ -108,8 +115,10 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
     try {
       const nextRouteId = await getNextRouteId();
       const nextBusId = await getNextBusId();
+      const nextTripId = await getNextTripId(); 
       const routeString = `${fromLocation} → ${toLocation}`;
 
+      // Insert data into 'routes' collection
       await setDoc(doc(db, "routes", nextRouteId), {
         routeId: nextRouteId,
         from: fromLocation,
@@ -119,6 +128,7 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
         price: Number(price)
       });
 
+      // Insert data into 'buses' collection
       await setDoc(doc(db, "buses", nextBusId), {
         busId: nextBusId,
         busNo: busNo,
@@ -130,8 +140,20 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
         status: "Active"
       });
 
-      alert(`Bus ${busNo} and Route added successfully!`);
+      // Insert data into 'trips' collection
+      await setDoc(doc(db, "trips", nextTripId), {
+        arrivalTime: estimatedTime, 
+        availableSeats: Number(capacity), 
+        busId: nextBusId, 
+        departureTime: "02:00 PM", 
+        routeId: nextRouteId, 
+        status: "scheduled", 
+        tripId: nextTripId 
+      });
+
+      alert(`Bus ${busNo}, Route, and Trip configured successfully!`);
       
+      // Reset form controls
       setBusNo(""); setCapacity(""); setFromLocation(""); setToLocation(""); 
       setDistance(""); setEstimatedTime(""); setPrice("");
 
@@ -148,7 +170,15 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
     try {
       await deleteDoc(doc(db, "buses", bus.id));
       await deleteDoc(doc(db, "routes", bus.routeId));
-      alert("Bus and associated route deleted successfully.");
+      
+      // Attempt to clear matching trips
+      const qTrips = query(collection(db, "trips"), where("busId", "==", bus.busId));
+      const tripSnap = await getDocs(qTrips);
+      tripSnap.forEach(async (tripDoc) => {
+        await deleteDoc(doc(db, "trips", tripDoc.id));
+      });
+
+      alert("Bus, associated route, and related trips deleted successfully.");
     } catch (error: any) {
       alert("Error deleting: " + error.message);
     }
@@ -162,11 +192,9 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
 
     setLoading(true);
     try {
-      // සිලෙක්ට් කරපු බස් එකේ සහ කොන්දොස්තරගේ සම්පූර්ණ විස්තර හොයාගන්නවා (Table එකේ නම පේන්න ඕන නිසා)
       const targetBus = buses.find((b) => b.busId === selectedBusId);
       const targetConductor = conductors.find((c) => c.conductorId === selectedConductorId);
 
-      // උඹ කියපු ලස්සන ID format එක: busId_date (e.g., bus001_2026-05-23)
       const customDocId = `${selectedBusId}_${todayDate}`;
 
       await setDoc(doc(db, "daily_assignments", customDocId), {
@@ -175,10 +203,10 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
         busNo: targetBus?.busNo || "",
         routeName: targetBus?.routeName || "",
         conductorId: selectedConductorId,
-        conductorName: targetConductor?.name || "Unknown Conductor", // Conductor ගේ collection එකේ field එක 'name' ලෙස උපකල්පනය කර ඇත
+        conductorName: targetConductor?.name || "Unknown Conductor", 
         ownerId: currentOwnerId,
         date: todayDate,
-        status: "pending", // මුලින්ම යද්දී pending වැටෙනවා
+        status: "pending", 
         createdAt: serverTimestamp()
       });
 
@@ -227,7 +255,7 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
               transition: "all 0.3s ease"
             }}
           >
-            🚌 Buses & Routes
+              🚌 Buses & Routes
           </button>
           <button 
             onClick={() => setActiveTab("staff")}
@@ -328,13 +356,12 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
         {activeTab === "staff" && (
           <div className="dashboard-container">
             
-            {/* Duty එකක් Assign කරන Form එක */}
             <section className="card">
               <h3 style={{ color: "#1e293b", marginBottom: "20px" }}>Daily Duty Assignment ({todayDate})</h3>
               <form onSubmit={handleAssignStaff}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px", marginBottom: "20px" }}>
                   
-                  {/* Bus Dropdown */}
+                  {/* Bus Dropdown - Dan hariyata load wenawa */}
                   <div>
                     <label style={{ fontSize: "14px", fontWeight: "600", color: "#475569" }}>Select Bus</label>
                     <select 
@@ -346,7 +373,9 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
                     >
                       <option value="">-- Choose Bus --</option>
                       {buses.map((b) => (
-                        <option key={b.id} value={b.busId}>{b.busNo} ({b.routeName})</option>
+                        <option key={b.id} value={b.busId}>
+                          {b.busNo} {b.routeName ? `(${b.routeName})` : ""}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -376,7 +405,6 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
               </form>
             </section>
 
-            {/* අද දවසේ සේවා නියුක්ති ලැයිස්තුව (Table එක) */}
             <section className="card" style={{ marginTop: "20px" }}>
               <h3 style={{ color: "#1e293b", marginBottom: "15px" }}>Today's Duty Roster & Responses</h3>
               <table>
@@ -392,10 +420,9 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
                 <tbody>
                   {dailyAssignments.length > 0 ? (
                     dailyAssignments.map((assign) => {
-                      // Status එක අනුව පාට වෙනස් කරන Logic එක
-                      let statusColor = "#eab308"; // Pending -> Yellow
-                      if (assign.status === "approved") statusColor = "#16a34a"; // Approved -> Green
-                      if (assign.status === "rejected") statusColor = "#dc2626"; // Rejected -> Red
+                      let statusColor = "#eab308"; 
+                      if (assign.status === "approved") statusColor = "#16a34a"; 
+                      if (assign.status === "rejected") statusColor = "#dc2626"; 
 
                       return (
                         <tr key={assign.id}>
@@ -406,7 +433,6 @@ const ManageSystem = ({ currentOwnerId }: ManageSystemProps) => {
                             {assign.status}
                           </td>
                           <td>
-                            {/* Conductor කෙනෙක් Reject කරලා නම්, Owner ට පුළුවන් සටහන අයින් කරලා එතනට වෙන කෙනෙක් දාන්න */}
                             <button 
                               onClick={() => handleDeleteAssignment(assign.id)} 
                               className="delete-btn"

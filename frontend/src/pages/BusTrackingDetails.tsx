@@ -4,37 +4,42 @@ import { ref, onValue } from 'firebase/database';
 import { rtdb } from '../firebaseConfig'; 
 
 const containerStyle = { width: '100%', height: '550px', borderRadius: '24px' };
-const defaultCenter = { lat: 6.9271, lng: 79.8612 }; // මුලින්ම කොළඹ පෙන්නනවා
+const defaultCenter = { lat: 6.9271, lng: 79.8612 }; // Default map focus initialized to Colombo coordinates
 
 const BusTrackingDetails = ({ busId }: { busId: string }) => {
   const [location, setLocation] = useState(defaultCenter);
   const [loading, setLoading] = useState(true);
-  const [isBusLive, setIsBusLive] = useState(false); // Live ද නැද්ද කියලා බලාගන්න State එකක්
+  const [isBusLive, setIsBusLive] = useState(false); // State to evaluate if the transit unit is actively streaming data
 
+  // Initialize and load the Google Maps JavaScript API
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
   });
 
   useEffect(() => {
+    // Fallback to a default transit profile instance ID if none is explicitly provided via props
     const currentBusId = busId ? busId : 'bus006';
-    console.log("දැන් පරීක්ෂා කරන බස් එක:", currentBusId);
+    console.log("Currently inspecting transit unit:", currentBusId);
 
+    // Reference pointing to the dedicated path inside Firebase Realtime Database
     const busRef = ref(rtdb, 'busLocations/' + currentBusId);
 
+    // Establish a live subscription listener to capture incoming stream frames
     const unsub = onValue(busRef, (snapshot) => {
       const data = snapshot.val();
-      console.log("DB එකේ අලුත් ලොකේෂන් එක:", data);
+      console.log("Incoming location updates from RTDB:", data);
 
       if (data && data.lat !== undefined && data.lng !== undefined) {
         const newLat = Number(data.lat);
         const newLng = Number(data.lng);
 
+        // Filter out uninitialized or dead coordinates (0,0 values)
         if (newLat !== 0 && newLng !== 0) {
           setLocation({ lat: newLat, lng: newLng });
-          setIsBusLive(true); // හරියටම Location ආවොත් බස් එක Live!
+          setIsBusLive(true); // Flag active streaming status if valid coordinates exist
         } else {
-          setIsBusLive(false); // 0,0 ආවොත් Offline/Waiting
+          setIsBusLive(false); // Flag offline/inactive status if coordinates evaluate to zero
         }
       } else {
         setIsBusLive(false);
@@ -45,6 +50,7 @@ const BusTrackingDetails = ({ busId }: { busId: string }) => {
       setLoading(false);
     });
 
+    // Terminate data synchronization subscription when component state changes or unmounts
     return () => unsub();
   }, [busId]);
 
@@ -54,7 +60,7 @@ const BusTrackingDetails = ({ busId }: { busId: string }) => {
         display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh',
         color: '#ef4444', fontFamily: "'Inter', sans-serif", fontWeight: '600', background: '#0f172a'
       }}>
-        ⚠️ Map එක load කිරීමේදී දෝෂයක් ඇතිවිය. API Key එක පරීක්ෂා කරන්න.
+        ⚠️ An error occurred while loading the map engine. Please verify the credentials.
       </div>
     );
   }
@@ -144,10 +150,10 @@ const BusTrackingDetails = ({ busId }: { busId: string }) => {
           center={location} 
           zoom={15}
           options={{
-            mapTypeControl: true, // Satellite Toggle බටන් එක වැඩ
+            mapTypeControl: true, // Controls visibility layout of the satellite toggle feature 
             streetViewControl: false,
             fullscreenControl: true,
-            // 🗺️ Dark Theme එකට මැච් වෙන්න Map එක ඇතුලෙත් Custom Dark Silver Style එකක් දැම්මා
+            // 🗺️ Visual styles matrix mapping configuration to render canvas elements in Dark Mode
             styles: [
               { "elementType": "geometry", "stylers": [{ "color": "#1f2937" }] },
               { "elementType": "labels.text.stroke", "stylers": [{ "color": "#1f2937" }] },
@@ -167,7 +173,7 @@ const BusTrackingDetails = ({ busId }: { busId: string }) => {
             options={{
               label: {
                 text: "🚍 " + (busId ? busId : 'bus006'),
-                color: "#38bdf8", // Dark mode එකේ ලස්සනට පේන Bright Cyan Blue
+                color: "#38bdf8", // Bright Cyan Blue value designed to stand out under dark canvas conditions
                 fontWeight: "700",
                 fontSize: "14px"
               }

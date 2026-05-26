@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "../styles/dashboard.css";
-import { db, secondaryAuth } from "../firebaseConfig"; // 🟢 secondaryAuth import කරගන්න
+import { db, secondaryAuth } from "../firebaseConfig"; // Imported secondaryAuth to manage sub-accounts
 import {
   collection,
   setDoc,
@@ -19,7 +19,7 @@ interface ApproveRejectProps {
 }
 
 const ApproveReject = ({ currentOwnerId }: ApproveRejectProps) => {
-  // --- States ---
+  // --- Form States ---
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,32 +27,37 @@ const ApproveReject = ({ currentOwnerId }: ApproveRejectProps) => {
   const [selectedBus, setSelectedBus] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // --- Data Storage States ---
   const [conductors, setConductors] = useState<any[]>([]);
   const [buses, setBuses] = useState<any[]>([]);
 
-  // --- Initial Data Load ---
+  // --- Initial Realtime Data Sync ---
   useEffect(() => {
     if (!currentOwnerId) return;
 
+    // Listen to realtime updates for conductors belonging to the logged-in owner
     const qConductors = query(collection(db, "conductors"), where("ownerId", "==", currentOwnerId));
     const unsubCon = onSnapshot(qConductors, (snap) => {
       setConductors(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
+    // Listen to realtime updates for buses belonging to the logged-in owner
     const qBuses = query(collection(db, "buses"), where("ownerId", "==", currentOwnerId));
     const unsubBus = onSnapshot(qBuses, (snap) => {
       setBuses(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
+    // Cleanup realtime listeners on component unmount
     return () => { unsubCon(); unsubBus(); };
   }, [currentOwnerId]);
 
-  // --- Handlers ---
+  // --- Helper: Generate Sequential Conductor ID ---
   const getNextConId = async () => {
     const snapshot = await getDocs(collection(db, "conductors"));
     return `con${String(snapshot.size + 1).padStart(3, '0')}`;
   };
 
+  // --- Action Handler: Register New Conductor Account ---
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBus) return alert("Please select a bus first!");
@@ -61,10 +66,10 @@ const ApproveReject = ({ currentOwnerId }: ApproveRejectProps) => {
     try {
       const nextConId = await getNextConId();
       
-      // 🟢 Secondary Auth පාවිච්චි කරලා Conductor ව create කරනවා (Main Auth එකට කිසිම බලපෑමක් නෑ)
+      // Create user using Secondary Auth instance to avoid disrupting the main admin/owner session
       const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
       
-      // Database Entry
+      // Save full profile metadata to Firestore under the customized sequence ID
       await setDoc(doc(db, "conductors", nextConId), {
         uid: userCred.user.uid,
         conductorId: nextConId,
@@ -77,12 +82,12 @@ const ApproveReject = ({ currentOwnerId }: ApproveRejectProps) => {
         createdAt: new Date().toISOString()
       });
 
-      // Assign Bus
+      // Update corresponding bus record to link it with the newly created conductor ID
       await updateDoc(doc(db, "buses", selectedBus), { conductorId: nextConId });
 
       alert(`Success! ${nextConId} registered.`);
       
-      // Reset Form
+      // Reset form controls back to original empty state
       setName(""); setEmail(""); setPassword(""); setPhone(""); setSelectedBus("");
     } catch (err: any) {
       alert("Registration Error: " + err.message);
@@ -91,6 +96,7 @@ const ApproveReject = ({ currentOwnerId }: ApproveRejectProps) => {
     }
   };
 
+  // --- Action Handler: Terminate Conductor Record ---
   const handleDelete = async (id: string) => {
     if (!window.confirm(`Delete ${id}?`)) return;
     try {
@@ -108,6 +114,7 @@ const ApproveReject = ({ currentOwnerId }: ApproveRejectProps) => {
       </header>
 
       <main className="content">
+        {/* Entry Registration Form Card */}
         <section className="card">
           <h3 style={{ marginBottom: "15px" }}>Add New Conductor</h3>
           <form onSubmit={handleRegister}>
@@ -129,6 +136,7 @@ const ApproveReject = ({ currentOwnerId }: ApproveRejectProps) => {
           </form>
         </section>
 
+        {/* Data View Grid/Table Card */}
         <section className="card" style={{ marginTop: "20px" }}>
           <h3>Registered Conductors ({conductors.length})</h3>
           <table>
