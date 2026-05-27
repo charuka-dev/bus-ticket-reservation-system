@@ -1,0 +1,8 @@
+
+/* Main login page container (split left + right panels) */
+.login-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+

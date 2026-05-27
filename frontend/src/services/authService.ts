@@ -87,52 +87,54 @@ export const authService = {
         return ownerData;
     },
 
-    async loginUser(email: string, password: string, role: 'CUSTOMER' | 'CONDUCTOR' | 'OWNER'): Promise<Customer | Owner | any> {
-        // 1. Sign in with Firebase Auth
+    async loginUser(email: string, password: string, role: 'CUSTOMER' | 'CONDUCTOR' | 'OWNER' | 'ADMIN'): Promise<Customer | Owner | any> {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+        const uid = user.uid;
+        // Always merge uid so AuthContext can store it
+        const withUid = (data: any) => ({ uid, ...data });
 
         if (role === 'CUSTOMER') {
-            // Check by UID first (standard), fallback to email query (manual entry)
-            let customerSnap = await getDoc(doc(db, 'customers', user.uid));
-            if (customerSnap.exists()) return customerSnap.data() as Customer;
-            
+            let customerSnap = await getDoc(doc(db, 'customers', uid));
+            if (customerSnap.exists()) return withUid(customerSnap.data() as Customer);
             const q = query(collection(db, 'customers'), where('email', '==', email));
             const querySnap = await getDocs(q);
-            if (!querySnap.empty) return querySnap.docs[0].data() as Customer;
+            if (!querySnap.empty) return withUid(querySnap.docs[0].data() as Customer);
 
         } else if (role === 'CONDUCTOR') {
-            let conductorSnap = await getDoc(doc(db, 'conductors', user.uid));
-            if (conductorSnap.exists()) return conductorSnap.data();
-
+            let conductorSnap = await getDoc(doc(db, 'conductors', uid));
+            if (conductorSnap.exists()) return withUid({ ...conductorSnap.data(), role: 'CONDUCTOR' });
             const q = query(collection(db, 'conductors'), where('email', '==', email));
             const querySnap = await getDocs(q);
-            if (!querySnap.empty) return querySnap.docs[0].data();
+            if (!querySnap.empty) return withUid({ ...querySnap.docs[0].data(), role: 'CONDUCTOR' });
 
         } else if (role === 'OWNER') {
             let ownerData: Owner | null = null;
-            
-            let ownerSnap = await getDoc(doc(db, 'owners', user.uid));
+            const ownerSnap = await getDoc(doc(db, 'owners', uid));
             if (ownerSnap.exists()) {
                 ownerData = ownerSnap.data() as Owner;
             } else {
                 const q = query(collection(db, 'owners'), where('email', '==', email));
                 const querySnap = await getDocs(q);
-                if (!querySnap.empty) {
-                    ownerData = querySnap.docs[0].data() as Owner;
-                }
+                if (!querySnap.empty) ownerData = querySnap.docs[0].data() as Owner;
             }
-
             if (ownerData) {
-                if (ownerData.approved === 'pending') {
+                const approved = String(ownerData.approved).toLowerCase();
+                if (approved === 'pending') {
                     await authService.logoutUser();
-                    throw new Error("Your account is pending approval.");
-                } else if (ownerData.approved === 'rejected') {
+                    throw new Error('Your account is pending approval.');
+                } else if (approved === 'rejected') {
                     await authService.logoutUser();
-                    throw new Error("Your account has been rejected.");
+                    throw new Error('Your account has been rejected.');
                 }
-                return ownerData;
+                return withUid(ownerData);
             }
+        } else if (role === 'ADMIN') {
+            const adminSnap = await getDoc(doc(db, 'admins', uid));
+            if (adminSnap.exists()) return withUid({ ...adminSnap.data(), role: 'ADMIN' });
+            const q = query(collection(db, 'admins'), where('email', '==', email));
+            const qs = await getDocs(q);
+            if (!qs.empty) return withUid({ ...qs.docs[0].data(), role: 'ADMIN' });
         }
 
         // If the user document was not found in the correct table
@@ -168,4 +170,35 @@ export const authService = {
         }
         return null;
     }
+};
+
+// Admin login (separate from shared login — uses username instead of email)
+export const adminLoginWithUsername = async (
+  username: string,
+  password: string
+) => {
+  try {
+    const { signInWithEmailAndPassword } = await import('firebase/auth');
+    const { collection, query, where, getDocs } = await import('firebase/firestore');
+
+    const q = query(
+      collection(db, "admins"),
+      where("username", "==", username.trim())
+    );
+
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      throw new Error("User not found");
+    }
+
+    const email = snap.docs[0].data().email;
+
+    await signInWithEmailAndPassword(auth, email, password.trim());
+
+    return true;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Invalid User Name or Password");
+  }
 };

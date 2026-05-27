@@ -5,6 +5,8 @@ import { Loader2, ArrowLeft, CreditCard, CheckCircle } from 'lucide-react';
 import { bookingService, type CreateBookingInput } from '../../services/bookingService';
 import { paymentService, type PaymentMethod } from '../../services/paymentService';
 import { authService } from '../../services/authService';
+import { db } from '../../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { useToast } from '../../contexts/ToastContext';
 import type { TripWithSeats, Seat } from '../../types/firebase';
 
@@ -201,8 +203,17 @@ export default function BookingPage() {
             // 1. Create booking document (date-scoped, no static seat mutation)
             const bookingId = await bookingService.createBooking(input);
 
-            // 2. Record payment
-            await paymentService.createPayment(bookingId, customer.uid, totalAmount, method);
+            // 2. Fetch Bus to get ownerId
+            let ownerId = '';
+            if (trip.busId) {
+                const busSnap = await getDoc(doc(db, 'buses', trip.busId));
+                if (busSnap.exists()) {
+                    ownerId = busSnap.data().ownerId || '';
+                }
+            }
+
+            // 3. Record payment
+            await paymentService.createPayment(bookingId, customer.uid, totalAmount, method, trip.busId, ownerId);
 
             success('Booking confirmed! Redirecting to your ticket...');
             setTimeout(() => navigate(`/customer/ticket/${bookingId}`), 1200);

@@ -93,7 +93,9 @@ export interface Payment {
     amount: number;
     paymentDate: string;          // ISO string
     method: 'CREDIT_CARD' | 'DEBIT_CARD' | 'WALLET' | 'CASH';
-    status: 'SUCCESS' | 'FAILED' | 'PENDING' | 'REFUNDED';
+    status: 'SUCCESS' | 'FAILED' | 'PENDING' | 'REFUNDED' | 'paid';
+    ownerId?: string;
+    busId?: string;
 }
 
 // ─── Wallet ──────────────────────────────────────────────────────────────────

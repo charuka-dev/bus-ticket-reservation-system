@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -270,7 +270,7 @@ export default function Register() {
                             <input
                                 {...register('password')}
                                 type="password"
-                                placeholder="••••••••"
+                                placeholder="ΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇó"
                                 className={clsx(
                                     "w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border transition focus:ring-2 focus:outline-none",
                                     errors.password ? "border-red-500 focus:ring-red-200" : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
@@ -288,7 +288,7 @@ export default function Register() {
                             <input
                                 {...register('confirmPassword')}
                                 type="password"
-                                placeholder="••••••••"
+                                placeholder="ΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇó"
                                 className={clsx(
                                     "w-full pl-10 pr-4 py-3 rounded-lg bg-gray-50 border transition focus:ring-2 focus:outline-none",
                                     errors.confirmPassword ? "border-red-500 focus:ring-red-200" : "border-gray-200 focus:border-blue-500 focus:ring-blue-100"
@@ -322,7 +322,7 @@ export default function Register() {
                                 exit={{ opacity: 0, height: 0 }}
                                 className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 flex items-center"
                             >
-                                <span className="mr-2">⚠️</span> {serverError}
+                                <span className="mr-2">ΓÜá∩╕Å</span> {serverError}
                             </motion.div>
                         )}
                         {successMessage && (

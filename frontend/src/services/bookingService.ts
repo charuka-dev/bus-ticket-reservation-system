@@ -82,7 +82,7 @@ export const bookingService = {
         const routeDoc = routeSnapshot.docs[0];
         const routeData = routeDoc.data();
         const routeId = routeDoc.id;
-        
+
         const matchingRoute = {
             id: routeId,
             routeId,
@@ -134,9 +134,9 @@ export const bookingService = {
                 where('date', '==', searchDate),
                 where('status', 'in', ['CONFIRMED', 'PENDING']) // Ignore Cancelled or Failed bookings
             );
-            
+
             const bookedSnapshot = await getDocs(bookedQuery);
-            
+
             // 3. Calculate dynamic availability (accounting for multi-seat bookings if present, fallback to doc count)
             let bookedSeatsCount = 0;
             bookedSnapshot.forEach(bDoc => {
@@ -194,7 +194,7 @@ export const bookingService = {
 
             const routeId = tripData.routeId;
             const routeData = routeMap[routeId];
-            
+
             if (!routeData) return; // Skip if route doesn't exist
 
             const matchingRoute = {
@@ -227,9 +227,9 @@ export const bookingService = {
                 where('date', '==', searchDate),
                 where('status', 'in', ['CONFIRMED', 'PENDING'])
             );
-            
+
             const bookedSnapshot = await getDocs(bookedQuery);
-            
+
             let bookedSeatsCount = 0;
             bookedSnapshot.forEach(bDoc => {
                 const bData = bDoc.data();
@@ -320,7 +320,7 @@ export const bookingService = {
             if (routeSnap.exists()) {
                 const rd = routeSnap.data();
                 from = rd.from || 'Unknown';
-                to   = rd.to   || 'Unknown';
+                to = rd.to || 'Unknown';
                 routePrice = rd.price || 0;
                 console.log(`Route resolved — from: "${from}", to: "${to}", price: ${routePrice}`);
             }
@@ -328,13 +328,13 @@ export const bookingService = {
 
         // Resolve bus → capacity + busNumber
         let totalSeats = tripData.capacity || tripData.totalSeats || 0;
-        let busNumber  = tripData.busNumber || '';
+        let busNumber = tripData.busNumber || '';
         if ((!totalSeats || !busNumber) && tripData.busId) {
             const busSnap = await getDoc(doc(db, 'buses', tripData.busId));
             if (busSnap.exists()) {
                 const bd = busSnap.data();
                 totalSeats = totalSeats || bd.capacity || bd.totalSeats || 40;
-                busNumber  = busNumber  || bd.busNumber || bd.regNumber || '';
+                busNumber = busNumber || bd.busNumber || bd.regNumber || '';
             }
         }
         if (!totalSeats) totalSeats = 40; // absolute fallback
@@ -343,7 +343,7 @@ export const bookingService = {
         const bookedQuery = query(
             collection(db, 'bookings'),
             where('tripId', '==', tripId),
-            where('date',   '==', travelDate),
+            where('date', '==', travelDate),
             where('status', 'in', ['CONFIRMED', 'PENDING'])
         );
         const bookedSnap = await getDocs(bookedQuery);
@@ -364,14 +364,14 @@ export const bookingService = {
 
         const result: TripWithSeats = {
             id: tripSnap.id,
-            routeId:       tripData.routeId   || '',
-            busId:         tripData.busId     || '',
+            routeId: tripData.routeId || '',
+            busId: tripData.busId || '',
             busNumber,
             from,
             to,
             departureTime: tripData.departureTime || '',
-            arrivalTime:   tripData.arrivalTime   || '',
-            price:         tripData.price || routePrice || 0,
+            arrivalTime: tripData.arrivalTime || '',
+            price: tripData.price || routePrice || 0,
             totalSeats,
             availableSeats: totalSeats - bookedSeatNos.size,
             seats,
@@ -398,7 +398,7 @@ export const bookingService = {
 
     // 4. Create Booking (date-scoped, sequential ID) ──────────────────────────
     async createBooking(input: CreateBookingInput): Promise<string> {
-        const tripRef     = doc(db, 'trips', input.tripId);
+        const tripRef = doc(db, 'trips', input.tripId);
         const bookingsRef = collection(db, 'bookings');
 
         // Generate the sequential booking ID BEFORE the transaction
@@ -414,35 +414,35 @@ export const bookingService = {
 
             // --- Resolve route for tripDetails ---
             let from = 'Unknown';
-            let to   = 'Unknown';
+            let to = 'Unknown';
             if (tripData.routeId) {
                 const routeSnap = await transaction.get(doc(db, 'routes', tripData.routeId));
                 if (routeSnap.exists()) {
                     from = routeSnap.data().from || 'Unknown';
-                    to   = routeSnap.data().to   || 'Unknown';
+                    to = routeSnap.data().to || 'Unknown';
                 }
             }
 
             // --- Build booking document ---
             const booking: Booking = {
-                id:           newBookingId,
-                customerId:   input.customerId,
+                id: newBookingId,
+                customerId: input.customerId,
                 customerName: input.customerName,
-                tripId:       input.tripId,
-                busId:        tripData.busId || '',
-                date:         input.date,
-                seatNumbers:  input.seatNumbers,
-                seatCount:    input.seatNumbers.length,
-                totalAmount:  input.totalAmount,
-                bookingDate:  new Date().toISOString(),
-                status:       'CONFIRMED',
+                tripId: input.tripId,
+                busId: tripData.busId || '',
+                date: input.date,
+                seatNumbers: input.seatNumbers,
+                seatCount: input.seatNumbers.length,
+                totalAmount: input.totalAmount,
+                bookingDate: new Date().toISOString(),
+                status: 'CONFIRMED',
                 paymentStatus: 'UNPAID',
                 tripDetails: {
                     from,
                     to,
                     departureTime: tripData.departureTime || '',
-                    arrivalTime:   tripData.arrivalTime   || '',
-                    busNumber:     tripData.busNumber     || '',
+                    arrivalTime: tripData.arrivalTime || '',
+                    busNumber: tripData.busNumber || '',
                 },
             };
 
@@ -457,7 +457,7 @@ export const bookingService = {
     async cancelBooking(bookingId: string, customerId: string, refundAmount: number): Promise<void> {
         const bookingRef = doc(db, 'bookings', bookingId);
         const customerRef = doc(db, 'customers', customerId);
-        
+
         // Generate a new transaction ID for the refund receipt
         const newTxnId = await getNextTxnId();
         const txnRef = doc(db, 'walletTransactions', newTxnId);
@@ -506,7 +506,7 @@ export const bookingService = {
             collection(db, 'bookings'),
             where('customerId', '==', trimmedCustomerId),
         );
-        
+
         console.log('Executing Firestore query on bookings...');
         const snapshot = await getDocs(q);
         console.log(`Firestore query complete. Returned doc count: ${snapshot.size}`);
@@ -594,4 +594,24 @@ export const bookingService = {
             (a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime()
         );
     },
+};
+
+export const getAllBookings = async () => {
+    try {
+        // 📥 Fetch all documents from the "bookings" collection in Firestore
+        const snap = await getDocs(collection(db, "bookings"));
+
+        // 🔄 Convert Firestore documents into a usable array format
+        return snap.docs.map((doc) => ({
+            id: doc.id,        // document ID
+            ...doc.data(),     // document fields
+        }));
+
+    } catch (error) {
+        // ⚠️ Log any Firestore errors for debugging
+        console.error("Firestore error:", error);
+
+        // 🛑 Return empty array if something goes wrong
+        return [];
+    }
 };

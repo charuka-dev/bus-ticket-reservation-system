@@ -28,6 +28,8 @@ export const paymentService = {
         customerId: string,
         amount: number,
         method: PaymentMethod,
+        busId?: string,
+        ownerId?: string
     ): Promise<string> {
         const paymentId = await getNextPaymentId();
         const paymentRef = doc(db, 'payments', paymentId);
@@ -38,8 +40,10 @@ export const paymentService = {
             customerId,
             amount,
             method,
-            status:      'SUCCESS',
+            status:      'paid',
             paymentDate: new Date().toISOString(),
+            ...(busId && { busId }),
+            ...(ownerId && { ownerId }),
         };
 
         await setDoc(paymentRef, {

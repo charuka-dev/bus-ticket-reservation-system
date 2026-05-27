@@ -147,7 +147,7 @@ export default function MyBookings() {
             if (!user) return;
             
             // Actually call the service, using firebaseBookingId if available, fallback to bookingId
-            const docId = booking.firebaseBookingId || booking.bookingId;
+            const docId = booking.firebaseBookingId || booking.bookingId || '';
             await bookingService.cancelBooking(docId, user.uid, booking.totalAmount);
             
             success(`Booking ${booking.bookingId} cancelled successfully! Refund added to wallet.`);
@@ -177,7 +177,7 @@ export default function MyBookings() {
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-140px)] gap-6">
+        <div className="flex flex-col gap-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">My Bookings</h1>
@@ -210,9 +210,9 @@ export default function MyBookings() {
                 </div>
             </div>
 
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-8 min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Bookings List */}
-                <div className="lg:col-span-1 overflow-y-auto pr-2 space-y-4 h-full custom-scrollbar">
+                <div className="lg:col-span-1 space-y-4">
                     {loading ? (
                          <div className="flex justify-center p-10"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
                     ) : (
@@ -242,7 +242,7 @@ export default function MyBookings() {
                 </div>
 
                 {/* Right Column: Ticket Preview */}
-                <div className="lg:col-span-2 bg-gray-50 rounded-3xl p-6 md:p-12 flex items-center justify-center border border-gray-100 relative overflow-hidden h-full">
+                <div className="lg:col-span-2 bg-gray-50 rounded-3xl p-6 md:p-12 flex items-center justify-center border border-gray-100 relative">
                     <AnimatePresence mode="wait">
                         {selectedBooking ? (
                             <motion.div

@@ -16,10 +16,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import clsx from 'clsx';
 import { authService } from '../services/authService';
 import { useToast } from '../contexts/ToastContext';
+import { useAuthContext } from '../contexts/AuthContext';
 
 // --- Zod Schema ---
 const loginSchema = z.object({
-    role: z.enum(['CUSTOMER', 'CONDUCTOR', 'OWNER']),
+    role: z.enum(['CUSTOMER', 'CONDUCTOR', 'OWNER', 'ADMIN']),
     email: z.string().email({ message: 'Invalid email address' }),
     password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
 });
@@ -79,6 +80,7 @@ export default function Login() {
     const [serverError, setServerError] = useState<string | null>(null);
     const navigate = useNavigate();
     const { success, error } = useToast();
+    const { setAuthUser } = useAuthContext();
 
     const {
         register,
@@ -100,9 +102,14 @@ export default function Login() {
         setServerError(null);
         try {
             const userAccount = await authService.loginUser(data.email, data.password, data.role);
-            
-            // Optionally store role if needed elsewhere without checking DB again
-            localStorage.setItem('role', userAccount.role);
+
+            // Store in shared AuthContext (persisted to localStorage)
+            setAuthUser({
+                uid: userAccount.uid || '',
+                email: userAccount.email || data.email,
+                role: userAccount.role,
+                ...userAccount,
+            });
 
             success('Successfully logged in!');
 
@@ -117,17 +124,20 @@ export default function Login() {
                 case 'OWNER':
                     navigate('/owner/dashboard');
                     break;
+                case 'ADMIN':
+                    navigate('/admin');
+                    break;
                 default:
-                    navigate('/');
+                    navigate('/login');
             }
         } catch (err: any) {
             console.error('Login failed:', err);
             let msg = err.code ? err.message : (err.message || 'Login failed. Please try again.');
-            
+
             if (err.code === 'auth/invalid-credential' || (err.message && err.message.includes('auth/invalid-credential'))) {
                 msg = 'Incorrect email or password. Please try again.';
             }
-            
+
             setServerError(msg);
             error(msg);
         } finally {
@@ -224,12 +234,12 @@ export default function Login() {
                                     initial={false}
                                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                                     style={{
-                                        width: 'calc(33.33% - 0.5rem)',
-                                        left: selectedRole === 'CUSTOMER' ? '0.25rem' : selectedRole === 'CONDUCTOR' ? 'calc(33.33% + 0.25rem)' : 'calc(66.66% + 0.25rem)'
+                                        width: 'calc(25% - 0.5rem)',
+                                        left: selectedRole === 'CUSTOMER' ? '0.25rem' : selectedRole === 'CONDUCTOR' ? 'calc(25% + 0.25rem)' : selectedRole === 'OWNER' ? 'calc(50% + 0.25rem)' : 'calc(75% + 0.25rem)'
                                     }}
                                 />
 
-                                {['CUSTOMER', 'CONDUCTOR', 'OWNER'].map((role) => (
+                                {['CUSTOMER', 'CONDUCTOR', 'OWNER', 'ADMIN'].map((role) => (
                                     <button
                                         key={role}
                                         type="button"

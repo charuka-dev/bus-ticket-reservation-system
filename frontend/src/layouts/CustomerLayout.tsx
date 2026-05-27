@@ -23,9 +23,9 @@ export default function CustomerLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-gray-50">
       <Sidebar />
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 h-full overflow-y-auto p-8">
         <Outlet />
       </main>
     </div>
